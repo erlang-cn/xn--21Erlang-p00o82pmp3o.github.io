@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+{% if articles %}
+{% for article in articles_page.object_list %}
+<section class="article">
+{% include "article_header.html" %}
+{{ article.content }}
+</section>
+{% endfor %}
+{% include "pagination.html" %}
+{% endif %}
+{% endblock %}

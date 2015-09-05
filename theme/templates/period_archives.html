@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Archives for {{ period | reverse | join(' ') }}{% endblock %}
+{% block content %}
+<section class="article">
+<h1>Archives for {{ period | reverse | join(' ') }}</h1>
+<ul>
+{% for article in dates %}
+<li>{{ article.locale_date }} - <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a></li>
+{% endfor %}
+</ul>
+</section>
+{% endblock %}

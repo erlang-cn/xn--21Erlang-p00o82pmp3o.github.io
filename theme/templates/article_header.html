@@ -1,0 +1,21 @@
+<header>
+<abbr class="published" title="{{ article.date.isoformat() }}">
+{{ article.locale_date }}
+</abbr>
+<h2><a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a></h2>
+<div class="article-info">
+{% if article.translations %}
+Translations:
+{% for trans in article.translations %}
+<a href="{{ SITEURL }}/{{ trans.url }}">{{ trans.lang|lookup_lang_name }}</a>
+{% endfor %}
+{% endif %}
+</div>
+</header>
+<div class="clear"></div>
+{% if article.modified %}
+<abbr class="modified" title="{{ article.modified.isoformat() }}">
+Updated: {{ article.locale_modified }}
+</abbr>
+{% endif %}
+
