@@ -31,7 +31,7 @@
 {% endif %}
 {% endfor %}
 {% endif %}
-{% for title, link in MENUITEMS %}
+{% for title, link in I18N_MENUITEMS[DEFAULT_LANG] %}
 <a href="{{ link }}">{{ title }}</a>
 {% endfor %}
 {% if FEED_RSS %}

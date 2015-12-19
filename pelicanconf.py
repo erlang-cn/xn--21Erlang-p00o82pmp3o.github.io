@@ -76,6 +76,11 @@ AUTHOR_FEED_RSS = None
 LINKS = None
 SOCIAL = None
 
+I18N_MENUITEMS = {
+  'en': (),
+  'zh-cn': (('获取最新版本', '/book/'),)
+}
+
 DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
