@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>21天学通Erlang</title><link>https://xn--21Erlang-p00o82pmp3o.github.io/</link><description></description><atom:link href="https://xn--21Erlang-p00o82pmp3o.github.io/feeds.rss" rel="self"></atom:link><lastBuildDate>Sun, 18 Oct 2015 00:00:00 +0800</lastBuildDate><item><title>如何同步代码片段</title><link>https://xn--21Erlang-p00o82pmp3o.github.io/2015/10/how-to-keep-code-snippet-stay-in-sync.html</link><description>&lt;p&gt;因为21天学通Erlang是面向零基础的初学者的，长一点的代码肯定不会是一次写成的，是要分成很多步的。为了方便读者参考，同时也是为了能检验这中间每一步是不是真的没问题，所以每一步都会有一个单独文件，这个文件也要以和最终结果一样的方式检查。假如一个代码片段同时出现在很多个文件里，为了改这个片段，得同时编辑这些文件。这样真是非常非常麻烦，更大的麻烦是没办法检查同一个代码片段在多个文件里是否一致。&lt;/p&gt;
+&lt;p&gt;于是，我们用&lt;code&gt;snip.py&lt;/code&gt;来应付这些问题。给代码片段起个名字，比如下面这个例子中叫my-first-snippet，把代码片段写在&lt;code&gt;% SNIP BEGIN&lt;/code&gt;和 &lt;code&gt;% SNIP END&lt;/code&gt;之间，这样就可以根据名字来判断是不是同一个片段了。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+% SNIP BEGIN my-first-snippet
+hello() -&amp;gt;
+    world.
+% SNIP END
+&lt;/pre&gt;
+&lt;p&gt;运行&lt;code&gt;snip.py build&lt;/code&gt;之后，这些注释都会被删掉，就变成下面这样。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+hello() -&amp;gt;
+    world.
+&lt;/pre&gt;
+&lt;p&gt;Erlang中还有一种特殊的情况，clause之间是用&lt;code&gt;;&lt;/code&gt;分开的，但是最后一个clause结尾处用的是&lt;code&gt;.&lt;/code&gt;。此时可以用&lt;code&gt;%- SNIP END&lt;/code&gt;。这样build后，会把注释前后两行接成一行，不会出现&lt;code&gt;;&lt;/code&gt;和&lt;code&gt;.&lt;/code&gt;分别单独占一行的情况。比如下面这个例子中，在第一个文件里，只有一个clause。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+% SNIP BEGIN my-second-snippet
+hello(1) -&amp;gt;
+    world
+%- SNIP END
+.
+&lt;/pre&gt;
+&lt;p&gt;运行&lt;code&gt;snip.py build&lt;/code&gt;之后，就变成下面这样。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+hello(1) -&amp;gt;
+    world.
+&lt;/pre&gt;
+&lt;p&gt;在第二个文件里，有两个clause。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+% SNIP BEGIN my-second-snippet
+hello(1) -&amp;gt;
+    world
+%- SNIP END
+;
+hello(2) -&amp;gt;
+    big_world.
+&lt;/pre&gt;
+&lt;p&gt;运行&lt;code&gt;snip.py build&lt;/code&gt;之后，就变成下面这样。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+hello(1) -&amp;gt;
+    world;
+hello(2) -&amp;gt;
+    big_world.
+&lt;/pre&gt;
+&lt;p&gt;因为恰好LaTeX和Erlang注释用的都是&lt;code&gt;%&lt;/code&gt;。可以在LaTeX文档里也可以用同样的记号。为了能在PDF里看到代码片段所在的文件名和行号，需要使用&lt;code&gt;% SNIP REFERENCE&lt;/code&gt;。&lt;/p&gt;
+&lt;pre class="code literal-block"&gt;
+% SNIP REFERENCE hello.erl my-first-snippet
+\begin{SourceCode}
+% SNIP BEGIN my-first-snippet
+hello(1) -&amp;gt;
+    world.
+% SNIP END
+\end{SourceCode}
+&lt;/pre&gt;
+&lt;p&gt;修改过代码后，运行&lt;code&gt;snip.py status&lt;/code&gt;会列出所有不同步的代码片段的名字，接着就可以用&lt;code&gt;snip.py sync&lt;/code&gt;来选择某个文件里的片段，把所有文件里的同名代码片段都修改成一样的。&lt;/p&gt;
+</description><pubDate>Sun, 18 Oct 2015 00:00:00 +0800</pubDate><guid>tag:xn--21Erlang-p00o82pmp3o.github.io,2015-10-18:2015/10/how-to-keep-code-snippet-stay-in-sync.html</guid></item><item><title>核对Erlang Shell会话的记录</title><link>https://xn--21Erlang-p00o82pmp3o.github.io/2015/10/how-to-verify-log-of-erlang-shell-session.html</link><description>&lt;p&gt;和其他脚本语言的入门教程一样，21天学通Erlang里也会有很多Shell会话的记录。每次生成PDF时，都去人工检查一遍，不仅费时费力，还很容易出错。&lt;/p&gt;
+&lt;p&gt;为了方便检查这些记录，定义ErlangShellSession这个environment，把LaTeX文档中所有Erlang Shell会话记录输出到单独的文件，这样接下来就只要分别检查这些文件就可以了。&lt;/p&gt;
+&lt;pre class="code latex literal-block"&gt;
+&lt;span class="k"&gt;\newcounter&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;[section]
+&lt;span class="k"&gt;\newoutputstream&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\newenvironment&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;ErlangShellSession&lt;span class="nb"&gt;}{&lt;/span&gt;
+&lt;span class="k"&gt;\stepcounter&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\openoutputfile&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;&lt;span class="k"&gt;\currfiledir\theerlangshellsession&lt;/span&gt;.session&lt;span class="nb"&gt;}{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\writeverbatim&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="nb"&gt;}{&lt;/span&gt;
+&lt;span class="k"&gt;\endwriteverbatim&lt;/span&gt;
+&lt;span class="k"&gt;\closeoutputstream&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;erlangshellsession&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\begin&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;SingleSpacing&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\lstinputlisting&lt;/span&gt;&lt;span class="na"&gt;[title={Erlang Shell}]&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;&lt;span class="k"&gt;\currfiledir\theerlangshellsession&lt;/span&gt;.session&lt;span class="nb"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;\end&lt;/span&gt;&lt;span class="nb"&gt;{&lt;/span&gt;SingleSpacing&lt;span class="nb"&gt;}}&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;很糟糕的是，OTP并没有包含类似Python里的doctest的功能。Erlang作者之一，Joe Armstrong不久前也在Erlang Questions邮件列表上问如何实现类似的功能&lt;a class="footnote-reference" href="#interface" id="id1"&gt;[1]&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;Erlang Shell&lt;a class="reference external" href="http://ferd.ca/repl-a-bit-more-and-less-than-that.html"&gt;和一般的REPL在功能上有些出入&lt;/a&gt;，而且文档也不全。启动Shell的process，得先把自己设置成&lt;a class="reference external" href="http://www.erlang.org/doc/man/erlang.html#group_leader-0"&gt;group leader&lt;/a&gt;，这样才能以&lt;a class="reference external" href="http://www.erlang.org/doc/apps/stdlib/io_protocol.html"&gt;I/O protocol&lt;/a&gt;与Shell通信。收到&lt;code&gt;get_until&lt;/code&gt;消息，那么就向Shell发送他想要的内容。收到&lt;code&gt;put_chars&lt;/code&gt;消息，就把这些字符和记录去比较。假如所有记录内容都已经比较完了，也没有出现不同，那么就向Shell发送&lt;code&gt;eof&lt;/code&gt;消息，等Shell退出。&lt;/p&gt;
+&lt;table class="docutils footnote" frame="void" id="interface" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a class="reference external" href="http://erlang.org/pipermail/erlang-questions/2015-August/085420.html"&gt;Programmatic interface to the shell&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+</description><pubDate>Sun, 11 Oct 2015 00:00:00 +0800</pubDate><guid>tag:xn--21Erlang-p00o82pmp3o.github.io,2015-10-11:2015/10/how-to-verify-log-of-erlang-shell-session.html</guid></item><item><title>为什么21天能学通Erlang</title><link>https://xn--21Erlang-p00o82pmp3o.github.io/2015/10/why-you-can-teach-yourself-erlang-in-21-days.html</link><description>&lt;p&gt;21天学通一门程序语言，很多人都认为不现实。比如，Peter Norvig就认为&lt;a class="reference external" href="http://norvig.com/21-days.html"&gt;需要十年&lt;/a&gt;。还有广为流传的&lt;a class="reference external" href="http://abstrusegoose.com/249"&gt;漫画&lt;/a&gt;指出，唯一的办法从遥远的未来回到第21天干掉那时的自己。&lt;/p&gt;
+&lt;p&gt;只是学写个程序，用不着这么残忍。他们都犯了地球中心主义的错误。21天不必是地球上的21天。宇宙这么大，你肯定能找到一个星球。在那个星球上，以你开始学Erlang的那天作为第1天，等你学通Erlang的那天是第21天。这和Perl 6一定会在圣诞节发布&lt;a class="footnote-reference" href="#xmas" id="id3"&gt;[1]&lt;/a&gt;是同一个道理。&lt;/p&gt;
+&lt;p&gt;这就是为什么书名并没有骗你。&lt;/p&gt;
+&lt;table class="docutils footnote" frame="void" id="xmas" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id3"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote class="epigraph"&gt;
+&lt;p&gt;When Perl 6 arrives, every day will be like Christmas!&lt;/p&gt;
+&lt;p class="attribution"&gt;&amp;mdash;&lt;a class="reference external" href="http://pugs.blogs.com/talks/dls06-pugs.pdf"&gt;Pugs, an implementation of Perl 6&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+</description><pubDate>Sun, 04 Oct 2015 00:00:00 +0800</pubDate><guid>tag:xn--21Erlang-p00o82pmp3o.github.io,2015-10-04:2015/10/why-you-can-teach-yourself-erlang-in-21-days.html</guid></item></channel></rss>

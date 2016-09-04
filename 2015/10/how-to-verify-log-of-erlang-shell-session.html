@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="https://xn--21Erlang-p00o82pmp3o.github.io/theme/main.css" />
+<link href="https://xn--21Erlang-p00o82pmp3o.github.io/feeds.rss" type="application/rss+xml" rel="alternate" title="21天学通Erlang RSS Feed" />
+<link href="https://xn--21Erlang-p00o82pmp3o.github.io/feeds.atom" type="application/atom+xml" rel="alternate" title="21天学通Erlang Atom Feed" />
+<title>核对Erlang Shell会话的记录</title>
+</head>
+<body>
+<header class="header">
+<h1><a href="https://xn--21Erlang-p00o82pmp3o.github.io/">21天学通Erlang</a></h1>
+<nav class="categories">
+</nav>
+<nav class="links">
+<a href="/book/">获取最新版本</a>
+<a href="https://xn--21Erlang-p00o82pmp3o.github.io/feeds.rss">RSS</a>
+<a href="https://xn--21Erlang-p00o82pmp3o.github.io/feeds.atom">ATOM</a>
+</nav>
+<div class="clear"></div>
+<nav class="lang">
+<span>简体中文</span>
+ | <a href="https://xn--21Erlang-p00o82pmp3o.github.io/en/">English</a>
+</nav>
+</header>
+<div class="clear"></div>
+<section class="article">
+<header>
+<abbr class="published" title="2015-10-11T00:00:00+08:00">
+2015年10月11日
+</abbr>
+<h2><a href="https://xn--21Erlang-p00o82pmp3o.github.io/2015/10/how-to-verify-log-of-erlang-shell-session.html">核对Erlang Shell会话的记录</a></h2>
+<div class="article-info">
+</div>
+</header>
+<div class="clear"></div>
+<p>和其他脚本语言的入门教程一样，21天学通Erlang里也会有很多Shell会话的记录。每次生成PDF时，都去人工检查一遍，不仅费时费力，还很容易出错。</p>
+<p>为了方便检查这些记录，定义ErlangShellSession这个environment，把LaTeX文档中所有Erlang Shell会话记录输出到单独的文件，这样接下来就只要分别检查这些文件就可以了。</p>
+<pre class="code latex literal-block">
+<span class="k">\newcounter</span><span class="nb">{</span>erlangshellsession<span class="nb">}</span>[section]
+<span class="k">\newoutputstream</span><span class="nb">{</span>erlangshellsession<span class="nb">}</span>
+<span class="k">\newenvironment</span><span class="nb">{</span>ErlangShellSession<span class="nb">}{</span>
+<span class="k">\stepcounter</span><span class="nb">{</span>erlangshellsession<span class="nb">}</span>
+<span class="k">\openoutputfile</span><span class="nb">{</span><span class="k">\currfiledir\theerlangshellsession</span>.session<span class="nb">}{</span>erlangshellsession<span class="nb">}</span>
+<span class="k">\writeverbatim</span><span class="nb">{</span>erlangshellsession<span class="nb">}</span>
+<span class="nb">}{</span>
+<span class="k">\endwriteverbatim</span>
+<span class="k">\closeoutputstream</span><span class="nb">{</span>erlangshellsession<span class="nb">}</span>
+<span class="k">\begin</span><span class="nb">{</span>SingleSpacing<span class="nb">}</span>
+<span class="k">\lstinputlisting</span><span class="na">[title={Erlang Shell}]</span><span class="nb">{</span><span class="k">\currfiledir\theerlangshellsession</span>.session<span class="nb">}</span>
+<span class="k">\end</span><span class="nb">{</span>SingleSpacing<span class="nb">}}</span>
+</pre>
+<p>很糟糕的是，OTP并没有包含类似Python里的doctest的功能。Erlang作者之一，Joe Armstrong不久前也在Erlang Questions邮件列表上问如何实现类似的功能<a class="footnote-reference" href="#interface" id="id1">[1]</a>。</p>
+<p>Erlang Shell<a class="reference external" href="http://ferd.ca/repl-a-bit-more-and-less-than-that.html">和一般的REPL在功能上有些出入</a>，而且文档也不全。启动Shell的process，得先把自己设置成<a class="reference external" href="http://www.erlang.org/doc/man/erlang.html#group_leader-0">group leader</a>，这样才能以<a class="reference external" href="http://www.erlang.org/doc/apps/stdlib/io_protocol.html">I/O protocol</a>与Shell通信。收到<code>get_until</code>消息，那么就向Shell发送他想要的内容。收到<code>put_chars</code>消息，就把这些字符和记录去比较。假如所有记录内容都已经比较完了，也没有出现不同，那么就向Shell发送<code>eof</code>消息，等Shell退出。</p>
+<table class="docutils footnote" frame="void" id="interface" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://erlang.org/pipermail/erlang-questions/2015-August/085420.html">Programmatic interface to the shell</a></td></tr>
+</tbody>
+</table>
+
+</section>
+</body>
+</html>

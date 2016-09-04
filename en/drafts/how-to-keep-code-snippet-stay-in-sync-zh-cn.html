@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="https://xn--21Erlang-p00o82pmp3o.github.io/en/../theme/main.css" />
+<link href="https://xn--21Erlang-p00o82pmp3o.github.io/en/feeds.rss" type="application/rss+xml" rel="alternate" title="Teach Yourself Erlang in 21 days RSS Feed" />
+<link href="https://xn--21Erlang-p00o82pmp3o.github.io/en/feeds.atom" type="application/atom+xml" rel="alternate" title="Teach Yourself Erlang in 21 days Atom Feed" />
+<title>如何同步代码片段</title>
+</head>
+<body>
+<header class="header">
+<h1><a href="https://xn--21Erlang-p00o82pmp3o.github.io/en/">Teach Yourself Erlang in 21 days</a></h1>
+<nav class="categories">
+</nav>
+<nav class="links">
+<a href="https://xn--21Erlang-p00o82pmp3o.github.io/en/feeds.rss">RSS</a>
+<a href="https://xn--21Erlang-p00o82pmp3o.github.io/en/feeds.atom">ATOM</a>
+</nav>
+<div class="clear"></div>
+<nav class="lang">
+<a href="https://xn--21Erlang-p00o82pmp3o.github.io/">简体中文</a>
+ | <span>English</span>
+</nav>
+</header>
+<div class="clear"></div>
+<section class="article">
+<header>
+<abbr class="published" title="2015-10-18T00:00:00+08:00">
+2015年10月18日
+</abbr>
+<h2><a href="https://xn--21Erlang-p00o82pmp3o.github.io/en/drafts/how-to-keep-code-snippet-stay-in-sync-zh-cn.html">如何同步代码片段</a></h2>
+<div class="article-info">
+</div>
+</header>
+<div class="clear"></div>
+<p>因为21天学通Erlang是面向零基础的初学者的，长一点的代码肯定不会是一次写成的，是要分成很多步的。为了方便读者参考，同时也是为了能检验这中间每一步是不是真的没问题，所以每一步都会有一个单独文件，这个文件也要以和最终结果一样的方式检查。假如一个代码片段同时出现在很多个文件里，为了改这个片段，得同时编辑这些文件。这样真是非常非常麻烦，更大的麻烦是没办法检查同一个代码片段在多个文件里是否一致。</p>
+<p>于是，我们用<code>snip.py</code>来应付这些问题。给代码片段起个名字，比如下面这个例子中叫my-first-snippet，把代码片段写在<code>% SNIP BEGIN</code>和 <code>% SNIP END</code>之间，这样就可以根据名字来判断是不是同一个片段了。</p>
+<pre class="code literal-block">
+% SNIP BEGIN my-first-snippet
+hello() -&gt;
+    world.
+% SNIP END
+</pre>
+<p>运行<code>snip.py build</code>之后，这些注释都会被删掉，就变成下面这样。</p>
+<pre class="code literal-block">
+hello() -&gt;
+    world.
+</pre>
+<p>Erlang中还有一种特殊的情况，clause之间是用<code>;</code>分开的，但是最后一个clause结尾处用的是<code>.</code>。此时可以用<code>%- SNIP END</code>。这样build后，会把注释前后两行接成一行，不会出现<code>;</code>和<code>.</code>分别单独占一行的情况。比如下面这个例子中，在第一个文件里，只有一个clause。</p>
+<pre class="code literal-block">
+% SNIP BEGIN my-second-snippet
+hello(1) -&gt;
+    world
+%- SNIP END
+.
+</pre>
+<p>运行<code>snip.py build</code>之后，就变成下面这样。</p>
+<pre class="code literal-block">
+hello(1) -&gt;
+    world.
+</pre>
+<p>在第二个文件里，有两个clause。</p>
+<pre class="code literal-block">
+% SNIP BEGIN my-second-snippet
+hello(1) -&gt;
+    world
+%- SNIP END
+;
+hello(2) -&gt;
+    big_world.
+</pre>
+<p>运行<code>snip.py build</code>之后，就变成下面这样。</p>
+<pre class="code literal-block">
+hello(1) -&gt;
+    world;
+hello(2) -&gt;
+    big_world.
+</pre>
+<p>因为恰好LaTeX和Erlang注释用的都是<code>%</code>。可以在LaTeX文档里也可以用同样的记号。为了能在PDF里看到代码片段所在的文件名和行号，需要使用<code>% SNIP REFERENCE</code>。</p>
+<pre class="code literal-block">
+% SNIP REFERENCE hello.erl my-first-snippet
+\begin{SourceCode}
+% SNIP BEGIN my-first-snippet
+hello(1) -&gt;
+    world.
+% SNIP END
+\end{SourceCode}
+</pre>
+<p>修改过代码后，运行<code>snip.py status</code>会列出所有不同步的代码片段的名字，接着就可以用<code>snip.py sync</code>来选择某个文件里的片段，把所有文件里的同名代码片段都修改成一样的。</p>
+
+</section>
+</body>
+</html>
